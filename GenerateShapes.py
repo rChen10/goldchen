@@ -1,15 +1,14 @@
 #from tkinter import *
 #from turtle import *
-import sys
+import argparse
 from PIL import Image,ImageDraw
 import os
 import random
 import math
 
-def Initialize(shape_dir):
+def Initialize(shape_dir,num_images):
     curr_dir=os.getcwd()
     shapes_dir=curr_dir+'\\'+shape_dir#Directory of Shape folder
-    num_images=10 #number of images to draw for each category, may be replaced by a parameter as a system argument
 
     for root, subdirectories, files in os.walk(shapes_dir):
         for subdirectory in subdirectories:#Each folder is named the integer value for the amount of sides of the shape images it contains
@@ -32,8 +31,12 @@ def DrawImage(num_sides,num_images,i,curr_path):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print('Error: invalid arguments for GenerateShapes.py!')
-        exit(-1)
-    shapes_dir=sys.argv[1]
-    Initialize(shapes_dir)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("shapes_dir", help="name of folder in current directory for generating shape images",
+                        type=str)
+    parser.add_argument("num_images", help="amount of shape images to generate for each shape class",
+                        type=int)
+    args = parser.parse_args()
+    shapes_dir=args.shapes_dir
+    num_images=args.num_images
+    Initialize(shapes_dir,num_images)
