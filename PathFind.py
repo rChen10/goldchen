@@ -28,7 +28,7 @@ class Grid:
         runningCost = 0
         for node in path:
             x, y = node
-            runningCost += self.grid[x][y]
+            runningCost += self.grid[y][x]
         return runningCost
 
     def parseGridFile(self, gridFile):
@@ -150,6 +150,73 @@ class BFS:
                         queue.put(currentPath + [nextNode])
         return None # no answer in this node
 
+class Dijkstra:
+    def __init__(self, grid):
+        self.grid = grid
+        self.statesExplored = 0
+        self.depthFound = 0
+    
+    def findMin(self, queue):
+        minNode = (math.inf, None, None)
+        for node in queue:
+            if node[0] < minNode[0]:
+                minNode = node
+        return minNode
+
+    def findNode(self, queue, pos):
+        for node in queue:
+            if node[1] == pos:
+                return node
+        return None
+
+    def changeNode(self, queue, pos, dist, parent):
+        for node in queue:
+            if node[1] == pos:
+                queue.remove(node)
+                queue += [(dist, pos, parent)]
+                return
+        return
+    
+    def search(self):
+        # node = (dist, position, parent)
+        queue = []
+        finished = []
+
+        # init
+        for j in range(self.grid.colSize):
+            for i in range(self.grid.rowSize):
+                if (i, j) == self.grid.start:
+                    queue += [(0, (i,j), None)]
+                else:
+                    queue += [(math.inf, (i,j), None)]
+        
+        # main loop
+        while queue != []:
+            currentNode = self.findMin(queue)
+            currentPos = currentNode[1]
+            finished += [currentNode]
+            queue.remove(currentNode)
+            for transition in self.grid.transitions:
+                if self.grid.checkBounds(currentPos, transition):
+                    nextPos = (currentPos[0] + transition[0],
+                               currentPos[1] + transition[1])
+                    nextNode = self.findNode(queue, nextPos)
+                    if(nextNode == None): # no longer in queue
+                        continue
+                    cost = currentNode[0] + self.grid.pathCost([currentPos, nextPos])
+                    if cost < nextNode[0]:
+                        self.changeNode(queue, nextPos, cost, currentPos)
+        
+        # reconstruct path
+        node = self.findNode(finished, self.grid.goal)
+        path = [node[1]]
+        while node[2] != None:
+            node = self.findNode(finished, node[2])
+            path += [node[1]]
+        path.reverse()
+        
+        return path
+
 # Heuristics
 class ManhattanHeuristic():
     """ Taxicab distance from goalState """
@@ -158,10 +225,11 @@ class ManhattanHeuristic():
         return abs(currentNode[0] - goal[0]) + abs(currentNode[1] - goal[1])
 
 if __name__ == "__main__":
-    grid = Grid("grid.txt")
-    algo = AStar(grid, ManhattanHeuristic())
+    grid = Grid("test.txt")
+    #algo = AStar(grid, ManhattanHeuristic())
     #algo = DFSB(grid, optimal=True)
     #algo = BFS(grid)
+    algo = Dijkstra(grid)
     
     start = time.time()
     path = algo.search()
