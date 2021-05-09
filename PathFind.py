@@ -1,6 +1,8 @@
 from queue import PriorityQueue
+from queue import Queue
 import functools
 import math
+import time
 
 # Problem
 class Grid:
@@ -60,6 +62,8 @@ class AStar:
     def __init__(self, grid, heur):
         self.grid = grid
         self.heuristic = heur
+        self.statesExplored = 0
+        self.depthFound = 0
     
     def queueTransitions(self, frontier, path, depth):
         for i in range(len(self.grid.transitions)):
@@ -93,6 +97,59 @@ class AStar:
             self.queueTransitions(frontier, currentPath, currentDepth)
         return None # no solution
 
+class DFSB:
+    def __init__(self, grid, optimal=False):
+        self.grid = grid
+        self.statesExplored = 0
+        self.depthFound = 0
+        self.optimal = optimal
+    
+    def search(self, path=[]):
+        if path == []:
+            path = [self.grid.start]
+        self.statesExplored += 1
+        self.depthFound += 1
+
+        if self.optimal and len(path) >= self.grid.rowSize + self.grid.colSize:
+            self.depthFound -= 1
+            return None
+        if path[-1] == self.grid.goal: # is a solution
+            return path
+
+        for transition in self.grid.transitions:
+            if self.grid.checkBounds(path[-1], transition):
+                nextNode = (path[-1][0] + transition[0],
+                            path[-1][1] + transition[1])
+                if nextNode in path: # disallow retracing steps
+                    continue
+                result = self.search(path + [nextNode])
+                if result != None:
+                    return result
+                self.depthFound -= 1
+        return None # no answer in this node
+
+class BFS:
+    def __init__(self, grid):
+        self.grid = grid
+        self.statesExplored = 0
+        self.depthFound = 0
+    
+    def search(self):
+        queue = Queue()
+        queue.put([self.grid.start])
+
+        while not queue.empty():
+            currentPath = queue.get()
+            if currentPath[-1] == self.grid.goal: # is a solution
+                return currentPath
+            for transition in self.grid.transitions:
+                if self.grid.checkBounds(currentPath[-1], transition):
+                    nextNode = (currentPath[-1][0] + transition[0],
+                                currentPath[-1][1] + transition[1])
+                    if nextNode not in currentPath:
+                        queue.put(currentPath + [nextNode])
+        return None # no answer in this node
+
 # Heuristics
 class ManhattanHeuristic():
     """ Taxicab distance from goalState """
@@ -103,4 +160,12 @@ class ManhattanHeuristic():
 if __name__ == "__main__":
     grid = Grid("grid.txt")
     algo = AStar(grid, ManhattanHeuristic())
-    print(algo.search())
+    #algo = DFSB(grid, optimal=True)
+    #algo = BFS(grid)
+    
+    start = time.time()
+    path = algo.search()
+    end = time.time()
+    print("Path:", algo.search())
+    print("Time (s):", end - start)
+    print("Time (ms):", (end - start) * 1000.0)
