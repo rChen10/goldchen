@@ -7,9 +7,15 @@ import sys
 
 # Problem
 class Grid:
-    def __init__(self, gridFile, rowSize=None, colSize=None,
+    def __init__(self, gridInput, rowSize=None, colSize=None,
                     transitions = ((0, 1), (0, -1), (-1, 0), (1, 0))):
-        self.grid = self.parseGridFile(gridFile)
+        if type(gridInput) == str:
+            self.grid = self.parseGridFile(gridFile)
+        if type(gridInput) == list:
+            self.grid = grid
+            self.rowSize = len(grid)
+            self.colSize = len(grid[0])
+        
         self.transitions = transitions
         if rowSize != None:
             self.rowSize = rowSize
