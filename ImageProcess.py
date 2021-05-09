@@ -7,7 +7,7 @@ from skimage.feature import hog
 from sklearn.cluster import KMeans
 from time import time
 
-def load_dataset(path, num_per_class=-1):
+def load_dataset(class_names,path, num_per_class=-1):
     data = []
     labels = []
     for id, class_name in class_names.items():
@@ -64,58 +64,54 @@ def extracthog(data):
     return hold
 
 
-if __name__ == "__main__":
-
-    #Shapes for regular
-    #loading data
-    class_names = [name[10:] for name in glob.glob('./ShapesL/*')]
-    class_names = dict(zip(range(3,len(class_names)+3), class_names))
+def train(samples,n,ground):
+    # Shapes for regular
+    # loading data
+    class_names = [name[9:] for name in glob.glob('./Shapes/*')]
+    class_names = dict(zip(range(3, len(class_names) + 3), class_names))
     print("class_names: %s " % class_names)
-    n_train_samples_per_class = 250
+    n_train_samples_per_class = samples #250 max
 
-    train_data, train_label = load_dataset('./ShapesL/', n_train_samples_per_class)
+    train_data, train_label = load_dataset(class_names,'./Shapes/', n_train_samples_per_class)
     n_train = len(train_label)
     print("n_train: %s" % n_train)
 
-    grid = cv2.imread("grid.png",0)
-    boxes = split(grid,10)
+    grid = cv2.imread("grid.png", 0)
+    boxes = split(grid, n)
     boxes = np.asarray(boxes)
-    #print(boxes.shape)
+    # print(boxes.shape)
 
-
-    #plt.imshow(boxes[len(boxes)-1],"gray")
-    #plt.show()
+    # plt.imshow(boxes[len(boxes)-1],"gray")
+    # plt.show()
     img_new_size = (80, 80)
     trainD = list(map(lambda x: cv2.resize(x, img_new_size), train_data))
     trainD = np.stack(trainD)
 
-    boxes = boxes[1:len(boxes)-1]
-    #print(len(boxes))
+    boxes = boxes[1:len(boxes) - 1]
+    # print(len(boxes))
     testD = list(map(lambda x: cv2.resize(x, img_new_size), boxes))
     testD = np.stack(testD)
 
-    #extracting features
+    # extracting features
     print("extracting features")
     trainD = extracthog(trainD)
     testD = extracthog(testD)
-    #trainD, testD = extract(trainD,testD)
+    # trainD, testD = extract(trainD,testD)
     print("finished extracting")
 
+    #testL = [7, 5, 5, 5, 5, 5, 6, 6, 3,
+             #6, 8, 5, 7, 4, 6, 7, 7, 7, 5,
+             #4, 3, 4, 3, 8, 5, 8, 8, 4, 7,
+             #3, 3, 6, 3, 6, 3, 5, 3, 5, 6,
+             #4, 7, 5, 5, 7, 8, 7, 3, 6, 5,
+             #5, 4, 4, 4, 7, 8, 3, 3, 3, 4,
+             #5, 5, 8, 4, 4, 8, 4, 7, 5, 5,
+             #7, 6, 7, 5, 4, 6, 7, 6, 6, 6,
+             #5, 6, 7, 8, 3, 5, 4, 3, 6, 7,
+             #8, 6, 3, 8, 7, 7, 6, 6, 5]
+    testL = ground[1:len(boxes) - 1]
 
-
-    testL = [7,5,5,5,5,5,6,6,3,
-6,8,5,7,4,6,7,7,7,5,
-4,3,4,3,8,5,8,8,4,7,
-3,3,6,3,6,3,5,3,5,6,
-4,7,5,5,7,8,7,3,6,5,
-5,4,4,4,7,8,3,3,3,4,
-5,5,8,4,4,8,4,7,5,5,
-7,6,7,5,4,6,7,6,6,6,
-5,6,7,8,3,5,4,3,6,7,
-8,6,3,8,7,7,6,6,5]
-
-
-    #print(train_label)
+    # print(train_label)
     lin = LinearSVC(max_iter=3000)
     lin.fit(trainD, train_label)
     result = lin.predict(testD)
@@ -123,6 +119,21 @@ if __name__ == "__main__":
     print('estimated labels: ', result)
     print('ground truth labels: ', testL)
     print('Accuracy: ', lin.score(testD, testL) * 100, '%')
+
+    result = np.asarray(result)
+    result = np.insert(result,0,0)
+    result = np.append(result,1)
+    result = np.reshape(result,(n,n))
+
+    print(result)
+    return result
+
+
+
+
+if __name__ == "__main__":
+
+    #train(250,10,ground)
 
 
 
