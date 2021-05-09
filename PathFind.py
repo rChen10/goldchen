@@ -1,8 +1,9 @@
 from queue import PriorityQueue
 from queue import Queue
-import functools
+import numpy as np
 import math
 import time
+import sys
 
 # Problem
 class Grid:
@@ -37,7 +38,7 @@ class Grid:
         dimensions = int(fp.readline())
         self.rowSize = dimensions
         self.colSize = dimensions
-        idk = fp.readline()
+        pixelWidth = fp.readline()
 
         # parse grid
         grid = [] 
@@ -56,6 +57,9 @@ class Grid:
                 if grid[i][j] == 1:
                     self.goal = (i, j)
         return grid
+    
+    def collapseGrid(self):
+        return np.flatten(self.grid)
 
 # Algorithms
 class AStar:
@@ -225,12 +229,16 @@ class ManhattanHeuristic():
         return abs(currentNode[0] - goal[0]) + abs(currentNode[1] - goal[1])
 
 if __name__ == "__main__":
-    grid = Grid("test.txt")
-    #algo = AStar(grid, ManhattanHeuristic())
-    #algo = DFSB(grid, optimal=True)
-    #algo = BFS(grid)
-    algo = Dijkstra(grid)
-    
+    a = int(sys.argv[1])
+    t = sys.argv[2]
+
+    grid = Grid(t)
+    algos = [AStar(grid, ManhattanHeuristic()), 
+                DFSB(grid, optimal=True),
+                BFS(grid),
+                Dijkstra(grid)]
+    algo = algos[a]
+
     start = time.time()
     path = algo.search()
     end = time.time()
