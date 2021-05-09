@@ -10,7 +10,7 @@ class Grid:
     def __init__(self, gridInput, rowSize=None, colSize=None,
                     transitions = ((0, 1), (0, -1), (-1, 0), (1, 0))):
         if type(gridInput) == str:
-            self.grid = self.parseGridFile(gridFile)
+            self.grid = self.parseGridFile(gridInput)
         if type(gridInput) == list:
             self.grid = grid
             self.rowSize = len(grid)
@@ -65,7 +65,7 @@ class Grid:
         return grid
     
     def collapseGrid(self):
-        return np.flatten(self.grid)
+        return np.array(self.grid).flatten()
 
 # Algorithms
 class AStar:
@@ -249,5 +249,6 @@ if __name__ == "__main__":
     path = algo.search()
     end = time.time()
     print("Path:", algo.search())
+    print("Path Cost:", grid.pathCost(path))
     print("Time (s):", end - start)
     print("Time (ms):", (end - start) * 1000.0)
