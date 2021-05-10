@@ -7,12 +7,19 @@ import sys
 
 # Problem
 class Grid:
-    def __init__(self, gridInput, rowSize=None, colSize=None,
+    def __init__(self, gridInput, rowSize=None, colSize=None, impassable=None, scale=1,
                     transitions = ((0, 1), (0, -1), (-1, 0), (1, 0))):
+        if impassable != None:
+            self.impassable = impassable
+        else:
+            self.impassable = []
+
         if type(gridInput) == str:
             self.grid = self.parseGridFile(gridInput)
+            self.scaleGrid(scale)
         if type(gridInput) == list:
             self.grid = gridInput
+            self.scaleGrid(scale)
             self.rowSize = len(gridInput)
             self.colSize = len(gridInput[0])
             self.start = (0, 0)
@@ -24,6 +31,10 @@ class Grid:
         if colSize != None:
             self.colSize = colSize
     
+    def scaleGrid(self, scale):
+        self.grid = [[n**scale for n in row] for row in self.grid]
+        self.impassable = [n**scale for n in self.impassable]
+
     def checkBounds(self, node, transition):
         newX = node[0] + transition[0]
         newY = node[1] + transition[1]
@@ -31,7 +42,17 @@ class Grid:
             return False
         if newY >= self.colSize or newY < 0:
             return False
+        if self.grid[newY][newX] in self.impassable:
+            return False
         return True
+
+    def checkPassable(self, node): 
+        x, y = node
+        if self.grid[y][x] in self.impassable:
+            return False
+        else:
+            return True
+        
     
     def pathCost(self, path): # potentialy replace with dynamic programming later
         runningCost = 0
@@ -217,7 +238,7 @@ class Dijkstra:
     def findMin(self, queue):
         minNode = (math.inf, None, None)
         for node in queue:
-            if node[0] < minNode[0]:
+            if node[0] <= minNode[0]:
                 minNode = node
         return minNode
 
@@ -243,10 +264,11 @@ class Dijkstra:
         # init
         for j in range(self.grid.colSize):
             for i in range(self.grid.rowSize):
-                if (i, j) == self.grid.start:
-                    queue += [(0, (i,j), None)]
-                else:
-                    queue += [(math.inf, (i,j), None)]
+                if self.grid.checkPassable((i,j)):
+                    if (i, j) == self.grid.start:
+                        queue += [(0, (i,j), None)]
+                    else:
+                        queue += [(math.inf, (i,j), None)]
         
         # main loop
         while queue != []:
@@ -292,7 +314,7 @@ if __name__ == "__main__":
     a = int(sys.argv[1])
     t = sys.argv[2]
 
-    grid = Grid(t)
+    grid = Grid(t, impassable=[7])
     algos = [AStar(grid, ManhattanHeuristic()), 
                 DFSB(grid, optimal=True),
                 BFS(grid),

@@ -13,21 +13,25 @@ if __name__ == "__main__":
                         type=int)
     parser.add_argument("samples", help="number of samples per shape",
                         type=int)
+    parser.add_argument("scale", help="scale for the costs",
+                        type=int)
     args = parser.parse_args()
     n=args.n
     samples=args.samples
+    cscale=args.scale
 
     # initialize training data
     print("Generating Data...")
     #gs.Initialize("Shapes", 250)
-    gg.Initialize(n*200, n)
-    trueGrid = pf.Grid("grid.txt")
+    #gg.Initialize(n*200, n)
+    trueGrid = pf.Grid("grid.txt", impassable=[7])
     ground = np.array(trueGrid.collapseGrid())
 
     # train and predict
     print("Training Model...")
     predictedGrid = ip.train(samples, n, ground)
-    predictedGrid = pf.Grid(predictedGrid.tolist()) # wrap grid
+    predictedGrid = pf.Grid(predictedGrid.tolist(), scale=cscale, impassable=[7]) # wrap grid
+    trueGrid.scaleGrid(cscale)
 
     # pathfind using predicted grid
     print("Pathfinding...")
@@ -46,12 +50,15 @@ if __name__ == "__main__":
     for i in range(len(algos)):
         algo = algos[i]
         print(algoNames[i], ":")
-        if i == 2 and n > 10:
+        if i == 3 and n > 10:
             print("DFSB can't finish within reasonable time")
             continue
         start = time.time()
         path = algo.search()
         end = time.time()
+        if path == None:
+            print("No solution!")
+            break
         ppc = predictedGrid.pathCost(path)
         tpc = trueGrid.pathCost(path)
         ex = algo.statesExplored
