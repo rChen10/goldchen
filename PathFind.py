@@ -12,9 +12,11 @@ class Grid:
         if type(gridInput) == str:
             self.grid = self.parseGridFile(gridInput)
         if type(gridInput) == list:
-            self.grid = grid
-            self.rowSize = len(grid)
-            self.colSize = len(grid[0])
+            self.grid = gridInput
+            self.rowSize = len(gridInput)
+            self.colSize = len(gridInput[0])
+            self.start = (0, 0)
+            self.goal = (self.rowSize-1, self.colSize-1)
         
         self.transitions = transitions
         if rowSize != None:
@@ -88,7 +90,7 @@ class AStar:
 
     def search(self):
         path = [] # aka current state
-        path += [grid.start]
+        path += [self.grid.start]
         statesExplored = 0
         frontier = PriorityQueue()
         # init frontier

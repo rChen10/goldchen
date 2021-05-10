@@ -109,7 +109,7 @@ def train(samples,n,ground):
              #7, 6, 7, 5, 4, 6, 7, 6, 6, 6,
              #5, 6, 7, 8, 3, 5, 4, 3, 6, 7,
              #8, 6, 3, 8, 7, 7, 6, 6, 5]
-    testL = ground[1:len(boxes) - 1]
+    testL = ground[1:len(ground) - 1]
 
     # print(train_label)
     lin = LinearSVC(max_iter=3000)
@@ -132,7 +132,7 @@ def train(samples,n,ground):
 
 
 if __name__ == "__main__":
-
+    pass
     #train(250,10,ground)
 
 
