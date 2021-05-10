@@ -10,7 +10,7 @@ import argparse
 if __name__ == "__main__":
     # parse agrs
     parser = argparse.ArgumentParser()
-    parser.add_argument("n", help="height and width of grid",
+    parser.add_argument("n", help="height and width of grid in cell count",
                         type=int)
     parser.add_argument("samples", help="number of samples per shape",
                         type=int)
@@ -23,8 +23,8 @@ if __name__ == "__main__":
 
     # initialize training data
     print("Generating Data...")
-    #gs.Initialize("Shapes", 250)
-    #gg.Initialize(n*200, n)
+    gs.Initialize("Shapes", samples)
+    gg.Initialize(n*200, n)
     trueGrid = pf.Grid("grid.txt", impassable=[7])
     ground = np.array(trueGrid.collapseGrid())
 
