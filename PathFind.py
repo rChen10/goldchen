@@ -196,6 +196,7 @@ class BFS:
 
         while not queue.empty():
             currentNode = queue.get()
+            self.statesExplored += 1
             if currentNode[0] == self.grid.goal: # is a solution
                 return self.reconstructPath(currentNode)
             for transition in self.grid.transitions:
@@ -250,6 +251,7 @@ class Dijkstra:
         # main loop
         while queue != []:
             currentNode = self.findMin(queue)
+            self.statesExplored += 1
             currentPos = currentNode[1]
             finished += [currentNode]
             queue.remove(currentNode)

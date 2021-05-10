@@ -37,6 +37,12 @@ if __name__ == "__main__":
                 pf.DFSB(predictedGrid, optimal=True),
                 pf.BFS(predictedGrid)]
     algoNames = ["A* (Manhattan Heuristic)", "A* (Euclidean Heuristic)", "Dijkstra", "DFSB", "BFS"]
+    
+    # open file for logging
+    fp = open("testlog.csv", "w")
+    print("Algorithm,Size,Samples,Time,States Explored,Predicted Path Cost,True Path Cost", file=fp)
+
+    # pathfind for each algorithm
     for i in range(len(algos)):
         algo = algos[i]
         print(algoNames[i], ":")
@@ -46,8 +52,16 @@ if __name__ == "__main__":
         start = time.time()
         path = algo.search()
         end = time.time()
+        ppc = predictedGrid.pathCost(path)
+        tpc = trueGrid.pathCost(path)
+        ex = algo.statesExplored
         print("Time (s):", end - start)
         print("Time (ms):", (end - start) * 1000.0)
-        print("Predicted Path Cost:", predictedGrid.pathCost(path))
-        print("True Path Cost:", trueGrid.pathCost(path))
-        print()
+        print("States Explored:", ex)
+        print("Predicted Path Cost:", ppc)
+        print("True Path Cost:", tpc)
+
+        print("%s,%d,%d,%f,%d,%d,%d" % 
+                (algoNames[i], n, samples, end-start, ex, ppc, tpc), file=fp)
+
+    fp.close()
