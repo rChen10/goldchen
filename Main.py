@@ -24,14 +24,14 @@ if __name__ == "__main__":
 
     # train and predict
     print("Training Model...")
-    predictedGrid = ip.train(250, n, ground)
+    predictedGrid = ip.train(50, n, ground)
     print(predictedGrid.tolist())
     predictedGrid = pf.Grid(predictedGrid.tolist()) # wrap grid
 
     # pathfind using predicted grid
     print("Pathfinding...")
-    #algo = pf.AStar(predictedGrid, pf.ManhattanHeuristic())
-    algo = pf.Dijkstra(predictedGrid)
+    algo = pf.AStar(predictedGrid, pf.EuclideanHeuristic())
+    #algo = pf.Dijkstra(predictedGrid)
     start = time.time()
     path = algo.search()
     end = time.time()

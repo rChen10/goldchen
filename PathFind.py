@@ -1,4 +1,4 @@
-from queue import PriorityQueue
+import heapq
 from queue import Queue
 import numpy as np
 import math
@@ -69,6 +69,26 @@ class Grid:
     def collapseGrid(self):
         return np.array(self.grid).flatten()
 
+# Helper class for AStar
+class AStarNode:
+    def __init__(self, f, g, pos, parent, depth):
+        self.f = f
+        self.g = g
+        self.pos = pos
+        self.parent = parent
+        self.depth = depth
+
+    def __repr__(self):
+        return "(" + str(self.f) + ", " + str(self.pos) + ")"
+    
+    # For priority queue
+    def __lt__(self, other):
+        return self.f < other.f
+
+    # For priority queue
+    def __gt__(self, other):
+        return self.f > other.f
+
 # Algorithms
 class AStar:
     def __init__(self, grid, heur):
@@ -77,36 +97,50 @@ class AStar:
         self.statesExplored = 0
         self.depthFound = 0
     
-    def queueTransitions(self, frontier, path, depth):
+    def queueTransitions(self, frontier, explored, node, depth):
         for i in range(len(self.grid.transitions)):
-            if self.grid.checkBounds(path[-1], self.grid.transitions[i]):
-                nextNode = (path[-1][0] + self.grid.transitions[i][0],
-                            path[-1][1] + self.grid.transitions[i][1])
-                if nextNode not in path: # disallow backtracking
-                    h = self.heuristic.compute(path, self.grid.goal) # calc h(x)
-                    item = path + [nextNode]
-                    f = self.grid.pathCost(item) + h
-                    frontier.put((f, item, depth+1))
+            if self.grid.checkBounds(node.pos, self.grid.transitions[i]):
+                explored += [node.pos]
+                nextPos = (node.pos[0] + self.grid.transitions[i][0],
+                            node.pos[1] + self.grid.transitions[i][1])
+                if len([exnode for exnode in explored if exnode == nextPos]) > 0: # disallow backtracking
+                    continue
+                g = node.g + self.grid.pathCost([nextPos])
+                if len([ennode for ennode in frontier
+                        if ennode.pos == nextPos and g > ennode.g]) > 0:
+                    continue
+                h = self.heuristic.compute(node.pos, self.grid.goal) # calc h(x)
+                f = g + h
+                heapq.heappush(frontier, AStarNode(f, g, nextPos, node, depth+1))
+    
+    def reconstructPath(self, node):
+        # reconstruct path
+        path = [node.pos]
+        while node.parent != None:
+            node = node.parent
+            path += [node.pos]
+        path.reverse()
+        return path
 
     def search(self):
-        path = [] # aka current state
-        path += [self.grid.start]
         statesExplored = 0
-        frontier = PriorityQueue()
+        frontier = []
+        explored = []
+        heapq.heapify(frontier)
         # init frontier
-        self.queueTransitions(frontier, path, 0)
+        heapq.heappush(frontier, AStarNode(0, 0, self.grid.start, None, 0))
         statesExplored += 1
         # main loop
-        while not frontier.empty():
-            currentItem = frontier.get()
-            currentDepth = currentItem[2]
-            currentPath = currentItem[1]
+        while frontier != []:
+            currentNode = heapq.heappop(frontier)
+            currentDepth = currentNode.depth
+            currentPos = currentNode.pos
             statesExplored += 1
-            if self.grid.goal == currentPath[-1]: # goal test
+            if self.grid.goal == currentPos: # goal test
                 self.statesExplored = statesExplored
                 self.depthFound = currentDepth
-                return currentPath
-            self.queueTransitions(frontier, currentPath, currentDepth)
+                return self.reconstructPath(currentNode)
+            self.queueTransitions(frontier, explored, currentNode, currentDepth)
         return None # no solution
 
 class DFSB:
@@ -232,9 +266,14 @@ class Dijkstra:
 # Heuristics
 class ManhattanHeuristic():
     """ Taxicab distance from goalState """
-    def compute(self, path, goal):
-        currentNode = path[-1]
+    def compute(self, currentNode, goal):
         return abs(currentNode[0] - goal[0]) + abs(currentNode[1] - goal[1])
+
+class EuclideanHeuristic():
+    """ Euclidean distance from goalState """
+    def compute(self, currentNode, goal):
+        return ( (currentNode[0] - goal[0])**2 + (currentNode[1] - goal[1])**2 )**0.5
+
 
 if __name__ == "__main__":
     a = int(sys.argv[1])
