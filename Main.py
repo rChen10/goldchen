@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # initialize training data
     print("Generating Data...")
     #gs.Initialize("Shapes", 250)
-    gg.Initialize(n*200, n)
+    #gg.Initialize(n*200, n)
     trueGrid = pf.Grid("grid.txt", impassable=[7])
     ground = np.array(trueGrid.collapseGrid())
 
@@ -39,14 +39,16 @@ if __name__ == "__main__":
     algos1 = [pf.AStar(predictedGrid, pf.ManhattanHeuristic()), 
                 pf.AStar(predictedGrid, pf.EuclideanHeuristic()), 
                 pf.Dijkstra(predictedGrid),
-                pf.DFSB(predictedGrid, optimal=True),
-                pf.BFS(predictedGrid)]
-    algos2 = [pf.AStar(trueGrid, pf.ManhattanHeuristic()), 
-                pf.AStar(trueGrid, pf.EuclideanHeuristic()), 
+                pf.DFSB(predictedGrid),
+                pf.BFS(predictedGrid),
+                pf.GreedyDFS(predictedGrid)]
+    algos2 = [pf.AStar(trueGrid, pf.ManhattanHeuristic()),
+                pf.AStar(trueGrid, pf.EuclideanHeuristic()),
                 pf.Dijkstra(trueGrid),
-                pf.DFSB(trueGrid, optimal=True),
-                pf.BFS(trueGrid)]
-    algoNames = ["A* (Manhattan Heuristic)", "A* (Euclidean Heuristic)", "Dijkstra", "DFSB", "BFS"]
+                pf.DFSB(trueGrid),
+                pf.BFS(trueGrid),     
+                pf.GreedyDFS(trueGrid)]
+    algoNames = ["A* (Manhattan Heuristic)", "A* (Euclidean Heuristic)", "Dijkstra", "DFSB", "BFS", "GreedyDFS"]
     
     # open file for logging
     fp1 = open("predlog.csv", "w")

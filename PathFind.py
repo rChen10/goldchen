@@ -169,7 +169,7 @@ class AStar:
         return None # no solution
 
 class DFSB:
-    def __init__(self, grid, optimal=False):
+    def __init__(self, grid, optimal=True):
         self.grid = grid
         self.statesExplored = 0
         self.depthFound = 0
@@ -302,6 +302,45 @@ class Dijkstra:
         
         return path
 
+# Greedy Search
+class GreedyDFS:
+    def __init__(self, grid, optimal=True):
+        self.grid = grid
+        self.statesExplored = 0
+        self.depthFound = 0
+        self.optimal = optimal
+    
+    def search(self, path=[]):
+        if path == []:
+            path = [self.grid.start]
+        self.statesExplored += 1
+        self.depthFound += 1
+
+        if self.optimal and len(path) >= self.grid.rowSize + self.grid.colSize:
+            self.depthFound -= 1
+            return None
+        if path[-1] == self.grid.goal: # is a solution
+            return path
+
+        children = []
+        for transition in self.grid.transitions:
+            if self.grid.checkBounds(path[-1], transition):
+                nextNode = (path[-1][0] + transition[0],
+                            path[-1][1] + transition[1])
+                if nextNode in path: # disallow retracing steps
+                    continue
+                children += [nextNode]
+
+        childrenCosts = [(self.grid.pathCost([child]), child) for child in children]
+        childrenCosts.sort()
+        children = [child[1] for child in childrenCosts]
+        for child in children:
+            result = self.search(path + [child])
+            if result != None:
+                return result
+            self.depthFound -= 1
+        return None # no answer in this node
+
 # Heuristics
 class ManhattanHeuristic():
     """ Taxicab distance from goalState """
@@ -318,11 +357,12 @@ if __name__ == "__main__":
     a = int(sys.argv[1])
     t = sys.argv[2]
 
-    grid = Grid(t, impassable=[7])
+    grid = Grid(t)
     algos = [AStar(grid, ManhattanHeuristic()), 
-                DFSB(grid, optimal=True),
+                DFSB(grid),
                 BFS(grid),
-                Dijkstra(grid)]
+                Dijkstra(grid),
+                GreedyDFS(grid)]
     algo = algos[a]
 
     start = time.time()
