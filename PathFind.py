@@ -180,20 +180,31 @@ class BFS:
         self.statesExplored = 0
         self.depthFound = 0
     
+    def reconstructPath(self, node):
+        # reconstruct path
+        path = [node[0]]
+        while node[1] != None:
+            node = node[1]
+            path += [node[0]]
+        path.reverse()
+        return path
+    
     def search(self):
         queue = Queue()
-        queue.put([self.grid.start])
+        queue.put((self.grid.start, None))
+        explored = [self.grid.start]
 
         while not queue.empty():
-            currentPath = queue.get()
-            if currentPath[-1] == self.grid.goal: # is a solution
-                return currentPath
+            currentNode = queue.get()
+            if currentNode[0] == self.grid.goal: # is a solution
+                return self.reconstructPath(currentNode)
             for transition in self.grid.transitions:
-                if self.grid.checkBounds(currentPath[-1], transition):
-                    nextNode = (currentPath[-1][0] + transition[0],
-                                currentPath[-1][1] + transition[1])
-                    if nextNode not in currentPath:
-                        queue.put(currentPath + [nextNode])
+                if self.grid.checkBounds(currentNode[0], transition):
+                    nextNode = (currentNode[0][0] + transition[0],
+                                currentNode[0][1] + transition[1])
+                    if len([exnode for exnode in explored if exnode == nextNode]) == 0:
+                        explored += [nextNode]
+                        queue.put((nextNode, currentNode))
         return None # no answer in this node
 
 class Dijkstra:
