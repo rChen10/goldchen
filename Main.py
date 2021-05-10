@@ -4,6 +4,7 @@ import ImageProcess as ip
 import PathFind as pf
 import numpy as np
 import time
+import math
 import argparse
 
 if __name__ == "__main__":
@@ -23,7 +24,7 @@ if __name__ == "__main__":
     # initialize training data
     print("Generating Data...")
     #gs.Initialize("Shapes", 250)
-    #gg.Initialize(n*200, n)
+    gg.Initialize(n*200, n)
     trueGrid = pf.Grid("grid.txt", impassable=[7])
     ground = np.array(trueGrid.collapseGrid())
 
@@ -35,40 +36,56 @@ if __name__ == "__main__":
 
     # pathfind using predicted grid
     print("Pathfinding...")
-    algos = [pf.AStar(predictedGrid, pf.ManhattanHeuristic()), 
+    algos1 = [pf.AStar(predictedGrid, pf.ManhattanHeuristic()), 
                 pf.AStar(predictedGrid, pf.EuclideanHeuristic()), 
                 pf.Dijkstra(predictedGrid),
                 pf.DFSB(predictedGrid, optimal=True),
                 pf.BFS(predictedGrid)]
+    algos2 = [pf.AStar(trueGrid, pf.ManhattanHeuristic()), 
+                pf.AStar(trueGrid, pf.EuclideanHeuristic()), 
+                pf.Dijkstra(trueGrid),
+                pf.DFSB(trueGrid, optimal=True),
+                pf.BFS(trueGrid)]
     algoNames = ["A* (Manhattan Heuristic)", "A* (Euclidean Heuristic)", "Dijkstra", "DFSB", "BFS"]
     
     # open file for logging
-    fp = open("testlog.csv", "w")
-    print("Algorithm,Size,Samples,Time,States Explored,Predicted Path Cost,True Path Cost", file=fp)
+    fp1 = open("predlog.csv", "w")
+    fp2 = open("truelog.csv", "w")
+    fps = [fp1, fp2]
+    algosList = [algos1, algos2]
 
     # pathfind for each algorithm
-    for i in range(len(algos)):
-        algo = algos[i]
-        print(algoNames[i], ":")
-        if i == 3 and n > 10:
-            print("DFSB can't finish within reasonable time")
-            continue
-        start = time.time()
-        path = algo.search()
-        end = time.time()
-        if path == None:
-            print("No solution!")
-            break
-        ppc = predictedGrid.pathCost(path)
-        tpc = trueGrid.pathCost(path)
-        ex = algo.statesExplored
-        print("Time (s):", end - start)
-        print("Time (ms):", (end - start) * 1000.0)
-        print("States Explored:", ex)
-        print("Predicted Path Cost:", ppc)
-        print("True Path Cost:", tpc)
+    for j in range(2):
+        fp = fps[j]
+        algos = algosList[j]
+        print("Algorithm,Size,Samples,Time,States Explored,Predicted Path Cost,True Path Cost", file=fp)
+        if j == 0:
+            print("---Predicted Grid")
+        if j == 1:
+            print("---True Grid")
+        for i in range(len(algos)):
+            algo = algos[i]
+            print(algoNames[i], ":")
+            if i == 3 and n > 10:
+                print("DFSB can't finish within reasonable time")
+                continue
+            start = time.time()
+            path = algo.search()
+            end = time.time()
+            if path == None:
+                print("No solution!")
+                break
+            ppc = predictedGrid.pathCost(path)
+            tpc = trueGrid.pathCost(path, warn=True)
+            ex = algo.statesExplored
+            print("Time (s):", end - start)
+            print("Time (ms):", (end - start) * 1000.0)
+            print("States Explored:", ex)
+            print("Predicted Path Cost:", ppc)
+            print("True Path Cost:", tpc)
 
-        print("%s,%d,%d,%f,%d,%d,%d" % 
-                (algoNames[i], n, samples, end-start, ex, ppc, tpc), file=fp)
+            print("%s,%d,%d,%f,%d,%d,%d" % 
+                    (algoNames[i], n, samples, end-start, ex, ppc, tpc), file=fp)
 
-    fp.close()
+    for fp in fps:
+        fp.close()

@@ -52,13 +52,17 @@ class Grid:
             return False
         else:
             return True
-        
     
-    def pathCost(self, path): # potentialy replace with dynamic programming later
+    def pathCost(self, path, warn=False): # potentialy replace with dynamic programming later
         runningCost = 0
         for node in path:
             x, y = node
-            runningCost += self.grid[y][x]
+            if self.checkPassable(node):
+                runningCost += self.grid[y][x]
+            else:
+                if warn:
+                    print("True Path: Ran through an obstacle!")
+                runningCost += self.grid[y][x]**2
         return runningCost
 
     def parseGridFile(self, gridFile):
