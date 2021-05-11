@@ -2,6 +2,14 @@
 Python Version 3.8.5 64bit 
 
 libraries to install beforehand:
+skikit-image    Version 0.17.2
+opencv-python   Version 4.5.2.52
+scikit-learn    Version 0.24.1
+
+commands to install the above libraries:
+pip install skikit-image
+pip install opencv-python
+pip install scikit-learn
 
 
 Command format:  Main.py n samples scale
