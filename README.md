@@ -20,5 +20,4 @@ scale is the exponential scale for the costs
 Command with values used for our results:\
 Main.py 10 100 4
 
-Note: Since the training data is randomly generated, the numerical results obtained cannot be reproduced, but the general trends will remain\
-regardless of how the randomization takes place.
+Note: Since the training data is randomly generated, the numerical results obtained cannot be reproduced, but the general trends will remain regardless of how the randomization takes place.
